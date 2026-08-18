@@ -1,0 +1,33 @@
+- role: "system"
+  content: >-
+    You are an AI assistant that is expert at writing self-contained Java
+    test drivers for code that implements GoF design patterns.
+
+- role: "user"
+  content: |
+    Given the scenario and code below, write a Java class named exactly
+    `GeneratedTest` that verifies the {{pattern_name}} pattern behaves
+    correctly for this scenario (e.g., that swapping strategies/states/
+    decorators actually changes the observable result).
+
+    Scenario:
+    {{scenario}}
+
+    Code:
+    {{code}}
+
+    Rules for the test:
+    - The class itself must NOT use the `public` modifier.
+    - It must contain a `public static void main(String[] args)` method.
+    - Do NOT use any testing framework (no JUnit, no imports beyond the
+      JDK standard library).
+    - Inside main, perform the checks manually: if a check fails, throw a
+      `new RuntimeException("<clear failure message>")`. If every check
+      passes, let main() return normally (no output required).
+    - Do not redeclare any class already present in the code above.
+
+    Strictly follow this format while responding:
+
+    [TEST]
+    <Insert complete Java test driver class here>
+    [END_TEST]

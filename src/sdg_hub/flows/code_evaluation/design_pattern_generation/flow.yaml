@@ -1,0 +1,161 @@
+metadata:
+  name: "Java Design Pattern Problem-Solution Generator"
+  description: >-
+    Flow for generating new design-pattern problem scenarios and corresponding
+    Java implementations with justification, from seed scenarios per GoF pattern.
+    The flow uses parser blocks to extract scenario/code/justification/test from
+    LLM responses, so any generated content that does not match the expected
+    template format defined in the prompts will be discarded. Generated code is
+    additionally compiled and executed against a generated JUnit test, and any
+    sample that fails to compile or pass is filtered out.
+  version: "1.0.0"
+  author: "LLM Eval UFCG"
+  license: "Apache-2.0"
+
+  recommended_models:
+    default: "openai/gpt-4.1-nano"
+    compatible: []
+    experimental: []
+
+  tags:
+    - "code-generation"
+    - "design-patterns"
+    - "java"
+
+  dataset_requirements:
+    required_columns:
+      - "pattern_name"
+      - "seed_scenario"
+    description: "One seed scenario per GoF pattern to expand from."
+
+  output_columns:
+    - scenario
+    - code
+    - justification
+    - test_code
+    - execution_result
+    - execution_result_success
+
+blocks:
+  # Fase 1: expandir cenário-problema a partir do seed
+  - block_type: PromptBuilderBlock
+    block_config:
+      block_name: new_scenario_generator
+      input_cols: [pattern_name, seed_scenario]
+      output_cols: [scenario_generation_prompt]
+      prompt_config_path: "prompts/problem_generation_prompt.yaml"
+
+  - block_type: LLMChatBlock
+    block_config:
+      block_name: generate_scenarios
+      input_cols: [scenario_generation_prompt]
+      output_cols: [scenario_list]
+      max_tokens: 1024
+      async_mode: true
+      temperature: 0.7
+
+  - block_type: LLMResponseExtractorBlock
+    block_config:
+      block_name: extract_scenarios
+      input_cols: [scenario_list]
+      extract_content: true
+
+  - block_type: TagParserBlock
+    block_config:
+      block_name: parse_scenario_list
+      input_cols: [extract_scenarios_content]
+      output_cols: [scenario]
+      start_tags:
+        - '[SCENARIO]'
+      end_tags:
+        - '[END_SCENARIO]'
+
+  # Fase 2: gerar código Java + justificativa
+  - block_type: PromptBuilderBlock
+    block_config:
+      block_name: new_solution_generator
+      input_cols: [pattern_name, scenario]
+      output_cols: [solution_generation_prompt]
+      prompt_config_path: "prompts/solution_generation_prompt.yaml"
+
+  - block_type: LLMChatBlock
+    block_config:
+      block_name: generate_solution
+      input_cols: [solution_generation_prompt]
+      output_cols: [solution_response]
+      max_tokens: 2048
+      async_mode: true
+      temperature: 0.3
+
+  - block_type: LLMResponseExtractorBlock
+    block_config:
+      block_name: extract_solution
+      input_cols: [solution_response]
+      extract_content: true
+
+  - block_type: TagParserBlock
+    block_config:
+      block_name: parse_solution
+      input_cols: [extract_solution_content]
+      output_cols: [code, justification]
+      start_tags:
+        - '[CODE]'
+        - '[JUSTIFICATION]'
+      end_tags:
+        - '[END_CODE]'
+        - '[END_JUSTIFICATION]'
+
+  # Fase 3: gerar teste JUnit para o código gerado
+  - block_type: PromptBuilderBlock
+    block_config:
+      block_name: new_test_generator
+      input_cols: [pattern_name, scenario, code]
+      output_cols: [test_generation_prompt]
+      prompt_config_path: "prompts/test_generation_prompt.yaml"
+
+  - block_type: LLMChatBlock
+    block_config:
+      block_name: generate_test
+      input_cols: [test_generation_prompt]
+      output_cols: [test_response]
+      max_tokens: 1024
+      async_mode: true
+      temperature: 0.3
+
+  - block_type: LLMResponseExtractorBlock
+    block_config:
+      block_name: extract_test
+      input_cols: [test_response]
+      extract_content: true
+
+  - block_type: TagParserBlock
+    block_config:
+      block_name: parse_test
+      input_cols: [extract_test_content]
+      output_cols: [test_code]
+      start_tags:
+        - '[TEST]'
+      end_tags:
+        - '[END_TEST]'
+
+  # Fase 4: juntar código + teste, compilar, rodar, filtrar
+  - block_type: TextConcatBlock
+    block_config:
+      block_name: combine_code_and_test
+      input_cols: [code, test_code]
+      output_cols: [full_source]
+      separator: "\n\n"
+
+  - block_type: "JavaCompilerBlock"
+    block_config:
+      block_name: "verify_execution"
+      input_cols: [full_source]
+      output_cols: [execution_result]
+      timeout: 15.0
+
+  - block_type: "ColumnValueFilterBlock"
+    block_config:
+      block_name: "filter_failed_executions"
+      input_cols: ["execution_result_success"]
+      filter_value: true
+      operation: "eq"
