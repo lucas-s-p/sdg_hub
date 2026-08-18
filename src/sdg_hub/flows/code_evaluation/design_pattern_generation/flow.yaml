@@ -150,7 +150,7 @@ blocks:
     block_config:
       block_name: "verify_execution"
       input_cols: [full_source]
-      output_cols: [execution_result]
+      output_cols: [execution_result, execution_result_success]
       timeout: 15.0
 
   - block_type: "ColumnValueFilterBlock"
