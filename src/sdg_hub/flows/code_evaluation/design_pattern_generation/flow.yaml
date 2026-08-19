@@ -62,15 +62,13 @@ blocks:
 
   - block_type: TagParserBlock
     block_config:
-      block_name: parse_solution
-      input_cols: [extract_solution_content]
-      output_cols: [justification, code]
+      block_name: parse_scenario_list
+      input_cols: [extract_scenarios_content]
+      output_cols: [scenario]
       start_tags:
-        - '[JUSTIFICATION]'
-        - '[CODE]'
+        - '[SCENARIO]'
       end_tags:
-        - '[END_JUSTIFICATION]'
-        - '[END_CODE]'
+        - '[END_SCENARIO]'
 
   # Fase 2: gerar código Java + justificativa
   - block_type: PromptBuilderBlock
@@ -99,13 +97,13 @@ blocks:
     block_config:
       block_name: parse_solution
       input_cols: [extract_solution_content]
-      output_cols: [code, justification]
+      output_cols: [justification, code]
       start_tags:
-        - '[CODE]'
         - '[JUSTIFICATION]'
+        - '[CODE]'
       end_tags:
-        - '[END_CODE]'
         - '[END_JUSTIFICATION]'
+        - '[END_CODE]'
 
   # Fase 3: gerar teste JUnit para o código gerado
   - block_type: PromptBuilderBlock
@@ -140,7 +138,7 @@ blocks:
       end_tags:
         - '[END_TEST]'
 
-  # Fase 4: juntar código + teste, compilar, rodar, filtrar
+  # Fase 4: juntar código + teste, compilar, executar e filtrar
   - block_type: TextConcatBlock
     block_config:
       block_name: combine_code_and_test
@@ -148,16 +146,16 @@ blocks:
       output_cols: [full_source]
       separator: "\n\n"
 
-  - block_type: "JavaCompilerBlock"
+  - block_type: JavaCompilerBlock
     block_config:
-      block_name: "verify_execution"
+      block_name: verify_execution
       input_cols: [full_source]
       output_cols: [execution_result, execution_result_success]
       timeout: 15.0
 
-  - block_type: "ColumnValueFilterBlock"
+  - block_type: ColumnValueFilterBlock
     block_config:
-      block_name: "filter_failed_executions"
-      input_cols: ["execution_result_success"]
+      block_name: filter_failed_executions
+      input_cols: [execution_result_success]
       filter_value: true
       operation: "eq"
