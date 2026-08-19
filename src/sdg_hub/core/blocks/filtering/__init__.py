@@ -9,4 +9,5 @@ from .column_value_filter import ColumnValueFilterBlock
 
 __all__ = [
     "ColumnValueFilterBlock",
+    "JavaCompilerBlock",
 ]
