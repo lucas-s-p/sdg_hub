@@ -1,0 +1,18 @@
+- role: "system"
+  content: >-
+    You are an AI assistant that is expert at software design and the Gang of
+    Four design patterns.
+
+- role: "user"
+  content: |
+    Develop a series of three problem scenarios of the same type as the seed
+    scenario, each one solvable by applying the {{pattern_name}} design pattern.
+
+    Seed scenario:
+    {{seed_scenario}}
+
+    Strictly follow this format for each scenario you generate while responding:
+
+    [SCENARIO]
+    <Insert scenario here>
+    [END_SCENARIO]
