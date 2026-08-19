@@ -9,7 +9,7 @@ metadata:
     additionally compiled and executed against a generated JUnit test, and any
     sample that fails to compile or pass is filtered out.
   version: "1.0.0"
-  author: "LLM Eval UFCG"
+  author: "Lucas Pereira UFCG"
   license: "Apache-2.0"
 
   recommended_models:
@@ -118,7 +118,7 @@ blocks:
       block_name: generate_test
       input_cols: [test_generation_prompt]
       output_cols: [test_response]
-      max_tokens: 1024
+      max_tokens: 8192
       async_mode: true
       temperature: 0.3
 
