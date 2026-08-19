@@ -5,27 +5,27 @@
 
 - role: "user"
   content: |
-    Given the scenario below, implement a Java solution applying the
-    {{pattern_name}} pattern, then explain why this pattern is the appropriate
-    choice.
+    Given the scenario below, explain why the {{pattern_name}} pattern is the
+    appropriate choice, then implement a Java solution applying it.
 
     Scenario:
     {{scenario}}
 
     Rules for the code:
     - Do NOT use the `public` modifier on any top-level class or interface.
-      This lets multiple types share one compilation unit without needing the
-      file name to match a public class name.
     - The code must be self-contained and compilable on its own (no external
       dependencies beyond the JDK standard library).
 
-    Strictly follow this format while responding:
-
-    [CODE]
-    <Insert complete, compilable Java code here>
-    [END_CODE]
+    Strictly follow this format while responding, in this exact order.
+    Both sections MUST have their closing tag — the response is only
+    complete once [END_CODE] has been written as the very last thing
+    in your output:
 
     [JUSTIFICATION]
     <Explain why {{pattern_name}} solves this scenario, and what would go
     wrong without it>
     [END_JUSTIFICATION]
+
+    [CODE]
+    <Insert complete, compilable Java code here>
+    [END_CODE]
