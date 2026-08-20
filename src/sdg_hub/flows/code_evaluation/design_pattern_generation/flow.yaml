@@ -3,12 +3,14 @@ metadata:
   description: >-
     Flow for generating new design-pattern problem scenarios and corresponding
     Java implementations with justification, from seed scenarios per GoF pattern.
-    The flow uses parser blocks to extract scenario/code/justification/test from
-    LLM responses, so any generated content that does not match the expected
-    template format defined in the prompts will be discarded. Generated code is
-    additionally compiled and executed against a generated JUnit test, and any
-    sample that fails to compile or pass is filtered out.
-  version: "1.0.0"
+    Each seed pairs a scenario with a worked solution, used as an in-context
+    demonstration for solving newly generated scenarios. The flow uses parser
+    blocks to extract scenario/code/justification/test from LLM responses, so
+    any generated content that does not match the expected template format
+    defined in the prompts will be discarded. Generated code is additionally
+    compiled and executed against a generated JUnit test, and any sample that
+    fails to compile or pass is filtered out.
+  version: "1.1.0"
   author: "Lucas Pereira UFCG"
   license: "Apache-2.0"
 
@@ -26,7 +28,10 @@ metadata:
     required_columns:
       - "pattern_name"
       - "seed_scenario"
-    description: "One seed scenario per GoF pattern to expand from."
+      - "seed_solution"
+    description: >-
+      One seed scenario per GoF pattern to expand from, paired with a worked
+      solution (justification + code) used as an in-context example.
 
   output_columns:
     - scenario
@@ -70,11 +75,11 @@ blocks:
       end_tags:
         - '[END_SCENARIO]'
 
-  # Fase 2: gerar código Java + justificativa
+  # Fase 2: gerar código Java + justificativa, com demonstração ICL do seed
   - block_type: PromptBuilderBlock
     block_config:
       block_name: new_solution_generator
-      input_cols: [pattern_name, scenario]
+      input_cols: [pattern_name, seed_scenario, seed_solution, scenario]
       output_cols: [solution_generation_prompt]
       prompt_config_path: "prompts/solution_generation_prompt.yaml"
 
@@ -83,7 +88,7 @@ blocks:
       block_name: generate_solution
       input_cols: [solution_generation_prompt]
       output_cols: [solution_response]
-      max_tokens: 2048
+      max_tokens: 4096
       async_mode: true
       temperature: 0.3
 

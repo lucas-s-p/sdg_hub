@@ -5,8 +5,17 @@
 
 - role: "user"
   content: |
-    Given the scenario below, explain why the {{pattern_name}} pattern is the
-    appropriate choice, then implement a Java solution applying it.
+    Here is an example of a well-solved {{pattern_name}} scenario, showing the
+    expected depth, style and format:
+
+    Example scenario:
+    {{seed_scenario}}
+
+    Example solution:
+    {{seed_solution}}
+
+    Now, following the same depth, style and format as the example above,
+    solve this new scenario:
 
     Scenario:
     {{scenario}}
